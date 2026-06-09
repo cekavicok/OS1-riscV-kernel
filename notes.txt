@@ -1,0 +1,24 @@
+asm:
+    __asm__ volatile("add %0, %1, %2" : "=r"(c) : "r"(a), "r"(b));
+    ili
+    __asm__ volatile("add %[c], %[a], %[b]" : [c]"=r"(c) : [a]"r"(a), [b]"r"(b));
+    "=r"  → output, u registar
+    "r"   → input, iz registra
+    "=m"  → output, u memoriju
+
+    csrr - Control and Stastus Register Read
+    lb/sb → 1B
+    lh/sh → 2B
+    lw/sw → 4B
+    ld/sd -> 8B tj 64b
+
+
+    0(%1) je indirektno adresiranje, uvek mora offset cak i kad je 0
+    __asm__ volatile ("ld %0, 0(%1)" : "=r"(code) : "r"(base + A0_OFFSET));
+
+
+cpp generalno:
+    static -> pripada klasi, a ne instanci
+    constexpr garantuje compile time const bez zauzimanja memorije
+
+
