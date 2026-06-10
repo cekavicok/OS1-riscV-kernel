@@ -1,6 +1,6 @@
 
 #_ZN  [duzina_klase] [ime_klase] [duzina_funkcije] [ime_funkcije] E v
-.extern _ZN5riscV10handleTrapEv
+.extern _ZN5riscV10handleTrapEPm
 
 .align 4 #poravnavanje stvec na 4
 .global _ZN5riscV11trapRoutineEv
@@ -18,7 +18,7 @@ _ZN5riscV11trapRoutineEv:
     sd x\ind, \ind*8(sp) #sd - store doubleword?
     .endr
 
-    call _ZN5riscV10handleTrapEv
+    call _ZN5riscV10handleTrapEPm
 
     .irp ind,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
     ld x\ind, \ind*8(sp)

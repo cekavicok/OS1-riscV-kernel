@@ -2,31 +2,33 @@
 #include "../h/riscV.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_cpp.h"
+#include "../h/PCB.h"
+#include "../h/workers.h"
+#include "../h/print.h"
 //clean->qemu
 
-void printStr(const char* str) {
-    while (*str) __putc(*str++);
-}
 
 void main(){
-
     riscV::w_stvec((uint64) &riscV::trapRoutine);
+    PCB *threads[3];
 
-    void* p1 = MemoryAllocator::mem_alloc(100);
-    if (p1) printStr("p1 ok\n");
-    void* p2 = MemoryAllocator::mem_alloc(200);
-    if (p2) printStr("p2 ok\n");
+    threads[0] = PCB::createPCB(nullptr);
+    PCB::running = threads[0];
 
-    MemoryAllocator::mem_free(p1);
-    void* p3 = MemoryAllocator::mem_alloc(50);
-    if (p3) printStr("p3 ok\n");
-    MemoryAllocator::mem_free(p2);
-    MemoryAllocator::mem_free(p3);
+    threads[1] = PCB::createPCB(workerBodyA);
+    printStr("Thread worker A created");
 
-    int* x = new int;
-    *x = 42;
-    delete x;
 
-    printStr("done\n");
+    threads[2] = PCB::createPCB(workerBodyB);
+    printStr("Thread worker B created");
+    while (!(threads[1]->isFinished() && threads[2]->isFinished())  ) {
+        PCB::yield();
+    }
 
+
+    for (auto &thread: threads) {
+        delete thread;
+    }
+
+    printStr("finished\n");
 }

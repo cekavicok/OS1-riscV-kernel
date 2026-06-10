@@ -22,3 +22,6 @@ cpp generalno:
     constexpr garantuje compile time const bez zauzimanja memorije
 
 
+
+za posle:
+    promeniti list.h i list.cpp da budu next u samom TCB zbog mem alokacije str. 25!

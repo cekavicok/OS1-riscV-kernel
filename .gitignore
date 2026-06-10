@@ -17,6 +17,7 @@ _*
 kernel
 core
 build
+myTest
 .gdbinit
 .idea
 *.pdf
