@@ -20,11 +20,13 @@ public:
     static void yield();
 
     static PCB* running;
+    static void wrapper();
+
 private:
     PCB(Body body) : body(body),
         stack(body != nullptr ? new uint64[STACK_SIZE] : nullptr),
         context({
-            body != nullptr ? (uint64) body : 0,
+            body != nullptr ? (uint64) &wrapper : 0,
             stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
         }),
         finished(false) {
@@ -44,6 +46,7 @@ private:
     static void dispatch();
     static void contextSwitch(Context *oldContext, Context *newContext);
     static uint64 constexpr STACK_SIZE = 1024;
+
 };
 
 #endif //PROJECT_BASE_PCB_HPP

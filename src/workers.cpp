@@ -10,7 +10,9 @@
 
 static uint64 fibonacci(uint64 n) {
     if (n == 0 || n == 1) { return n; }
-    if (n % 4 == 0) PCB::yield();
+    if (n % 4 == 0) {
+        PCB::yield();
+    }
     return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
@@ -45,7 +47,11 @@ void workerBodyA() {
     }
 
     PCB::running->setFinished(true);
+    printStr("A: postavljen finished, running=");
+    printInt((uint64)PCB::running);
+    printStr("\n");
     PCB::yield();
+    printStr("A: posle finalnog yield - ovo ne bi smelo da se ispiše\n");
 }
 
 void workerBodyB() {
@@ -59,9 +65,10 @@ void workerBodyB() {
     printStr("B: yield\n");
     __asm__ ("li t1, 5");
     PCB::yield();
-
+    printStr("B: nastavljam posle yield, ulazim u fibonacci\n");
     uint64 result = fibonacci(23);
-    printStr("A: fibonacci=");
+    printStr("B: fibonacci done\n");
+    printStr("B: fibonacci=");
     printInt(result);
     printStr("\n");
 

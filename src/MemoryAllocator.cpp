@@ -42,6 +42,7 @@ void* MemoryAllocator::mem_alloc(size_t size) {
     if (curr == nullptr) return nullptr; //ako nema mesto?
     size_t rem = curr->size - aligned;
     if (rem > sizeof(FreeMem)) {
+        curr->size = aligned;
         //pravim novi blok
         //ostatak od curr->size je iza novog zauzetog size + header novog tj sizeof(FreeMem)
         FreeMem* newFreeMem = (FreeMem*)((size_t)curr+sizeof(FreeMem)+aligned);

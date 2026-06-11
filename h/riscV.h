@@ -39,9 +39,12 @@ public:
         SSTATUS_SPP = (1<<8),
     };
 
+    static uint64 r_sstatus();
+    static void w_sstatus(uint64 sstatus);
+
     static void trapRoutine();
 private:
-    static void handleTrap(uint64 frame);
+    static void handleTrap(uint64* frame);
 };
 
 inline uint64 riscV::r_scause() {
@@ -82,6 +85,17 @@ inline uint64 riscV::r_stval() {
 
 inline void riscV::w_stval(uint64 stval) {
     __asm__ volatile ("csrw stval, %0" : : "r" (stval));
+}
+
+
+inline uint64 riscV::r_sstatus() {
+    uint64 volatile sstatus;
+    __asm__ volatile ("csrr %0, sstatus" : "=r" (sstatus));
+    return sstatus;
+}
+
+inline void riscV::w_sstatus(uint64 sstatus) {
+    __asm__ volatile ("csrw sstatus, %0" : : "r" (sstatus));
 }
 
 
