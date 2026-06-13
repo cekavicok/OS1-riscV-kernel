@@ -5,9 +5,10 @@
 #ifndef _syscall_cpp
 #define _syscall_cpp
 #include "syscall_c.h"
+#include "PCB.h"
 void* operator new (size_t);
 void operator delete (void*);
-/*class Thread {
+class Thread {
 public:
     Thread (void (*body)(void*), void* arg);
     virtual ~Thread ();
@@ -19,8 +20,10 @@ protected:
     virtual void run () {}
 private:
     thread_t myHandle;
-    void (*body)(void*); void* arg;
-};
+    void (*body)(void*);
+    void* arg;
+    static void threadWrapper(void* thread);
+};/*
 class Semaphore {
 public:
     Semaphore (unsigned init = 1);
@@ -38,12 +41,12 @@ protected:
     virtual void periodicActivation () {}
 private:
     time_t period;
-};
+};*/
 class Console {
 public:
     static char getc ();
     static void putc (char);
-};*/
+};
 
 #endif
 

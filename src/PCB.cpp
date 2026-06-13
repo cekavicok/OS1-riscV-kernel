@@ -9,8 +9,8 @@
 
 PCB *PCB::running = nullptr;
 
-PCB* PCB::createPCB(Body body) {
-    return new PCB(body);
+PCB* PCB::createPCB(Body body, void* arg, uint64* stack) {
+    return new PCB(body, arg, stack);
 }
 
 void PCB::yield() {
@@ -20,7 +20,7 @@ void PCB::yield() {
 }
 
 void PCB::wrapper() {
-    running->body();
+    running->body(running->arg);
     running->setFinished(true);
     PCB::dispatch();
 }

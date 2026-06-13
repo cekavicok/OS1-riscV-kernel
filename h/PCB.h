@@ -15,19 +15,22 @@ public:
     void setFinished(bool f) { finished = f; }
 
 
-    using Body = void (*)();
-    static PCB* createPCB(Body body);
+    using Body = void (*)(void*);
+    static PCB* createPCB(Body body, void* arg, uint64* stack);
     static void yield();
 
     static PCB* running;
-    static void wrapper();
+    static void dispatch();
+
 
 private:
-    PCB(Body body) : body(body),
-        stack(body != nullptr ? new uint64[STACK_SIZE] : nullptr),
+    PCB(Body body, void* arg, uint64* stack) :
+        body(body),
+        arg(arg),
+        stack(stack),
         context({
-            body != nullptr ? (uint64) &wrapper : 0,
-            stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
+            body != nullptr ? (uint64)&wrapper : 0,
+            stack != nullptr ? (uint64)&stack[STACK_SIZE] : 0
         }),
         finished(false) {
         if (body != nullptr) { Scheduler::put(this); }
@@ -40,11 +43,15 @@ private:
     };
 
     Body body;
+    void* arg;
     uint64 *stack;
     Context context;
     bool finished;
-    static void dispatch();
+
+    static void wrapper();
+
     static void contextSwitch(Context *oldContext, Context *newContext);
+
     static uint64 constexpr STACK_SIZE = 1024;
 
 };

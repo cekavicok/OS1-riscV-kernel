@@ -7,33 +7,22 @@
 #include "../h/print.h"
 //clean->qemu
 
+extern void userMain();
 
-void main(){
-    riscV::w_stvec((uint64)&riscV::trapRoutine);
-    PCB *threads[3];
+void usermainWrapper(void* thr) {
+    userMain();
+}
 
-    threads[0] = PCB::createPCB(nullptr);
+int main(){
+    riscV::w_stvec((uint64) &riscV::trapRoutine);
+    PCB* threads[2];
+
+    thread_create(&threads[0], nullptr, nullptr);
     PCB::running = threads[0];
-    printStr("main PCB addr=");
-    printInt((uint64)threads[0]);
-    printStr("\n");
-    threads[1] = PCB::createPCB(workerBodyA);
-    printStr("A PCB addr=");
-    printInt((uint64)threads[1]);
-    printStr("\n");
-    threads[2] = PCB::createPCB(workerBodyB);
-    printStr("B PCB addr=");
-    printInt((uint64)threads[2]);
-    printStr("\n");
-    while (!(threads[1]->isFinished() && threads[2]->isFinished())  ) {
-        //printStr("Uradjen yield");
-        PCB::yield();
+
+    thread_create(&threads[1], usermainWrapper, nullptr);
+    while (!(threads[1]->isFinished())) {
+        thread_dispatch();
     }
-
-
-    for (auto &thread: threads) {
-        delete thread;
-    }
-
-    printStr("finished\n");
+    return 0;
 }
