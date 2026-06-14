@@ -33,16 +33,31 @@ public:
     static uint64 r_stval();
     static void w_stval(uint64 stval);
 
+    //SPP = 0 -> userMode
+    //SPP = 1 -> supervisorMode
     enum BitMaskSstatus {
         SSTATUS_SIE = (1<<1),
         SSTATUS_SPIE = (1<<5),
         SSTATUS_SPP = (1<<8),
     };
 
+    enum BitMaskSip {
+        SIP_SSIP = (1 << 1),
+        SIP_STIP = (1 << 5),
+        SIP_SEIP = (1 << 9)
+    };
+
+    static void mask_set_sstatus(uint64 mask);
+    static void mask_clear_sstatus(uint64 mask);
+
+    static uint64 r_sip();
+    static void w_sip(uint64 sip);
+
     static uint64 r_sstatus();
     static void w_sstatus(uint64 sstatus);
-
+    static void setSppSpie();
     static void trapRoutine();
+    static void shutdown();
 private:
     static void handleTrap(uint64* frame);
 };
@@ -98,7 +113,22 @@ inline void riscV::w_sstatus(uint64 sstatus) {
     __asm__ volatile ("csrw sstatus, %0" : : "r" (sstatus));
 }
 
+inline void riscV::mask_set_sstatus(uint64 mask) {
+    //csrs samo date bitove stavlja na 1 tj radi OR
+    //csrc sve bitove maske koji su 1 postavi na 0, AND sa komplementom
+    __asm__ volatile("csrs sstatus, %0" : : "r" (mask));
+}
 
+inline void riscV::mask_clear_sstatus(uint64 mask) {
+    __asm__ volatile("csrc sstatus, %0" : : "r" (mask));
+}
+
+inline void riscV::shutdown() {
+    __asm__ volatile ("li t0, 0x5555");
+    __asm__ volatile ("li t1, 0x100000");
+    __asm__ volatile ("sw t0, 0(t1)");
+    //*(volatile uint32*)0x100000 = 0x5555;
+}
 
 
 #endif //PROJECT_BASE_RISCV_H

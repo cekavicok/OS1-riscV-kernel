@@ -6,11 +6,12 @@
 #include "../h/riscV.h"
 #include "../h/scheduler.h"
 #include "../h/print.h"
+#include "../h/syscall_c.h"
 
 PCB *PCB::running = nullptr;
 
-PCB* PCB::createPCB(Body body, void* arg, uint64* stack) {
-    return new PCB(body, arg, stack);
+PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged) {
+    return new PCB(body, arg, stack, privileged);
 }
 
 void PCB::yield() {
@@ -20,9 +21,9 @@ void PCB::yield() {
 }
 
 void PCB::wrapper() {
-    running->body(running->arg);
-    running->setFinished(true);
-    PCB::dispatch();
+    riscV::setSppSpie();
+    PCB::running->body(PCB::running->arg);
+    thread_exit();
 }
 
 void PCB::dispatch() {

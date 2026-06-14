@@ -10,8 +10,13 @@
 
 static constexpr uint64 ECALL_FROM_USER_MODE = 0x8UL;
 static constexpr uint64 ECALL_FROM_SUPERVISOR_MODE = 0x9UL;
-static constexpr uint64 SOFTWARE_INTERRUPT = 0x8000000000000001UL;
-static constexpr uint64 EXTERNAL_INTERRUPT = 0x8000000000000009UL;
+static constexpr uint64 SOFTWARE_INTERRUPT = 0x8000000000000001UL; //tajmer prekid
+static constexpr uint64 EXTERNAL_INTERRUPT = 0x8000000000000009UL; //spoljasnji prekid
+static constexpr uint64 ILLEGAL_INSTRUCTION = 0x2UL; //supervisor instr iz user moda
+static constexpr uint64 ILLEGAL_READ = 0x5UL; //adresa citanja
+static constexpr uint64 ILLEGAL_WRITE = 0x7UL; //adresa upisa
+
+
 
 
 //konstante za pomeranje frame pointera(fp)
@@ -20,11 +25,25 @@ static constexpr uint64 A0_OFFSET   = 10 * REG_SIZE;  // x10 = a0 = 80
 //ostali su sada A0_OFFSET + broj_registra * REG_SIZE;
 
 
+void riscV::setSppSpie() {
+    if (!PCB::running->isPrivileged()) {
+        mask_clear_sstatus(SSTATUS_SPP);
+    }
+    else {
+        mask_set_sstatus(SSTATUS_SPP);
+    }
+    //mask_set_sstatus(SSTATUS_SPIE);   // omogući prekide posle sret
+    __asm__ volatile ("csrw sepc, ra");
+    __asm__ volatile ("sret");
+}
+
+
 void riscV::handleTrap(uint64* frame) {
     uint64 scause = r_scause();
 
 
-    /*if (scause != ECALL_FROM_USER_MODE && scause != ECALL_FROM_SUPERVISOR_MODE) {
+    if (scause != ECALL_FROM_USER_MODE && scause != ECALL_FROM_SUPERVISOR_MODE
+        && scause != SOFTWARE_INTERRUPT && scause != EXTERNAL_INTERRUPT) {
         printStr("!!! TRAP scause=");
         printInt(scause);
         printStr(" sepc=");
@@ -32,8 +51,8 @@ void riscV::handleTrap(uint64* frame) {
         printStr(" stval=");
         printInt(r_stval());
         printStr("\n");
-        while(1); // zamrzni da vidiš output
-    }*/
+        while (1);
+        }
 
     if (scause == ECALL_FROM_USER_MODE || scause == ECALL_FROM_SUPERVISOR_MODE) {
         uint64 volatile sepc = r_sepc() + 4;
@@ -63,7 +82,8 @@ void riscV::handleTrap(uint64* frame) {
                 void* arg = (void*)arg2;
                 PCB::Body routine = (PCB::Body)arg3;
                 thread_t* handle = (thread_t*)arg4;
-                *handle = PCB::createPCB(routine, arg, stack);
+                bool privileged = (routine == nullptr);
+                *handle = PCB::createPCB(routine, arg, stack, privileged);
                 ret = *handle != nullptr ? 0 : -1;
                 break;
             }
@@ -85,7 +105,7 @@ void riscV::handleTrap(uint64* frame) {
     }
     else if (scause == SOFTWARE_INTERRUPT) {        // tajmer
 
-        uint64 volatile sepc = r_sepc() + 4;
+        uint64 volatile sepc = r_sepc();
         uint64 volatile sstatus = r_sstatus();
         __asm__ volatile("csrc sip, %0" : : "r"(0x2UL));
         w_sstatus(sstatus);
@@ -97,6 +117,15 @@ void riscV::handleTrap(uint64* frame) {
         plic_complete(plic_claim());
         w_sstatus(sstatus);
         w_sepc(sepc);
+    }
+    else if (scause == ILLEGAL_INSTRUCTION) {
+        shutdown();
+    }
+    else if (scause == ILLEGAL_READ) {
+        shutdown();
+    }
+    else if (scause == ILLEGAL_WRITE) {
+        shutdown();
     }
 
 

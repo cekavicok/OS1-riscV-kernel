@@ -24,5 +24,7 @@ int main(){
     while (!(threads[1]->isFinished())) {
         thread_dispatch();
     }
+
+
     return 0;
 }

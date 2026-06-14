@@ -13,10 +13,11 @@ public:
 
     bool isFinished() const { return finished; }
     void setFinished(bool f) { finished = f; }
-
+    bool isPrivileged() const { return privileged; }
+    void setPrivileged(bool f) { privileged = f; }
 
     using Body = void (*)(void*);
-    static PCB* createPCB(Body body, void* arg, uint64* stack);
+    static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
     static void yield();
 
     static PCB* running;
@@ -24,10 +25,11 @@ public:
 
 
 private:
-    PCB(Body body, void* arg, uint64* stack) :
+    PCB(Body body, void* arg, uint64* stack, bool privileged) :
         body(body),
         arg(arg),
         stack(stack),
+        privileged(privileged),
         context({
             body != nullptr ? (uint64)&wrapper : 0,
             stack != nullptr ? (uint64)&stack[STACK_SIZE] : 0
@@ -45,6 +47,7 @@ private:
     Body body;
     void* arg;
     uint64 *stack;
+    bool privileged;
     Context context;
     bool finished;
 
