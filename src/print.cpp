@@ -2,11 +2,11 @@
 // Created by os on 6/10/26.
 //
 #include "../h/print.h"
-#include "../lib/console.h"
+#include "../h/syscall_cpp.h"
 
 
 void printStr(char const *str) {
-    while (*str) __putc(*str++);
+    while (*str) putc(*str++);
 }
 
 void printInt(uint64 integer) {
@@ -19,6 +19,6 @@ void printInt(uint64 integer) {
     } while ((integer /= 10) != 0);
 
     while (--i >= 0) {
-        __putc(buf[i]);
+        putc(buf[i]);
     }
 }

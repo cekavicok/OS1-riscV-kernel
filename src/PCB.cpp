@@ -21,19 +21,22 @@ void PCB::yield() {
 }
 
 void PCB::wrapper() {
-    riscV::setSppSpie();
+    riscV::setSppSpie(&PCB::userBodyWrapper);
+}
+
+void PCB::userBodyWrapper() {
     PCB::running->body(PCB::running->arg);
     thread_exit();
 }
 
 void PCB::dispatch() {
     PCB* old = running;
+
     //printStr("D:");printInt((uint64)old);printStr("->");
     if (!old->isFinished()) {
         Scheduler::put(old);
     }
     running = Scheduler::get();
     //printStr(">");printInt((uint64)running);printStr("\n");
-
     PCB::contextSwitch(&old->context, &running->context);
 }

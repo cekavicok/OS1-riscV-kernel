@@ -52,7 +52,7 @@ private:
     bool finished;
 
     static void wrapper();
-
+    static void userBodyWrapper();
     static void contextSwitch(Context *oldContext, Context *newContext);
 
     static uint64 constexpr STACK_SIZE = 1024;

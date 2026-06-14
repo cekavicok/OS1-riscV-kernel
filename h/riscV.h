@@ -55,7 +55,7 @@ public:
 
     static uint64 r_sstatus();
     static void w_sstatus(uint64 sstatus);
-    static void setSppSpie();
+    static void setSppSpie(void (*entry)());
     static void trapRoutine();
     static void shutdown();
 private:

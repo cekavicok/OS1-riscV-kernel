@@ -7,6 +7,7 @@
 #include "../h/syscall_c.h"
 #include "../h/print.h"
 #include "../h/PCB.h"
+#include "../lib/console.h"
 
 static constexpr uint64 ECALL_FROM_USER_MODE = 0x8UL;
 static constexpr uint64 ECALL_FROM_SUPERVISOR_MODE = 0x9UL;
@@ -25,15 +26,15 @@ static constexpr uint64 A0_OFFSET   = 10 * REG_SIZE;  // x10 = a0 = 80
 //ostali su sada A0_OFFSET + broj_registra * REG_SIZE;
 
 
-void riscV::setSppSpie() {
-    if (!PCB::running->isPrivileged()) {
-        mask_clear_sstatus(SSTATUS_SPP);
-    }
-    else {
+void riscV::setSppSpie(void (*entry)()) {
+    if (PCB::running->isPrivileged()) {
         mask_set_sstatus(SSTATUS_SPP);
     }
-    //mask_set_sstatus(SSTATUS_SPIE);   // omogući prekide posle sret
-    __asm__ volatile ("csrw sepc, ra");
+    else {
+        mask_clear_sstatus(SSTATUS_SPP);
+    }
+    mask_set_sstatus(SSTATUS_SPIE);
+    w_sepc((uint64)entry);
     __asm__ volatile ("sret");
 }
 
@@ -42,7 +43,7 @@ void riscV::handleTrap(uint64* frame) {
     uint64 scause = r_scause();
 
 
-    if (scause != ECALL_FROM_USER_MODE && scause != ECALL_FROM_SUPERVISOR_MODE
+    /*if (scause != ECALL_FROM_USER_MODE && scause != ECALL_FROM_SUPERVISOR_MODE
         && scause != SOFTWARE_INTERRUPT && scause != EXTERNAL_INTERRUPT) {
         printStr("!!! TRAP scause=");
         printInt(scause);
@@ -52,7 +53,7 @@ void riscV::handleTrap(uint64* frame) {
         printInt(r_stval());
         printStr("\n");
         while (1);
-        }
+        }*/
 
     if (scause == ECALL_FROM_USER_MODE || scause == ECALL_FROM_SUPERVISOR_MODE) {
         uint64 volatile sepc = r_sepc() + 4;
@@ -96,6 +97,15 @@ void riscV::handleTrap(uint64* frame) {
                 PCB::dispatch();
                 break;
             }
+            case CODE_GETC : {
+                ret = (uint64)__getc();
+                break;
+            }
+            case CODE_PUTC : {
+                __putc((char)arg1);
+                ret = 0;
+                break;
+            }
         }
         //upisujem u a0 povratnu vrednost
         //__asm__ volatile("sd %0, 0(%1)" :: "r"(ret), "r"(base + A0_OFFSET) );
@@ -119,12 +129,15 @@ void riscV::handleTrap(uint64* frame) {
         w_sepc(sepc);
     }
     else if (scause == ILLEGAL_INSTRUCTION) {
+        printStr("radi ins\n");
         shutdown();
     }
     else if (scause == ILLEGAL_READ) {
+        printStr("radi read\n");
         shutdown();
     }
     else if (scause == ILLEGAL_WRITE) {
+        printStr("radi write\n");
         shutdown();
     }
 

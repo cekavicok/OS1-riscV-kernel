@@ -65,19 +65,15 @@ void thread_dispatch() {
 
 
 char getc() {
-    return __getc();
-    /*
     __asm__ volatile("mv a0, %0" : : "r" (CODE_GETC));
     __asm__ volatile("ecall");
     char c;
     __asm__ volatile("mv %0, a0" : "=r" (c));
-    return c;*/
+    return c;
 }
 
 void putc(char c) {
-    __putc(c);
-    /*
     __asm__ volatile ("mv a1, %0" : : "r" (c));
     __asm__ volatile ("mv a0, %0" : : "r" (CODE_PUTC));
-    __asm__ volatile ("ecall");*/
+    __asm__ volatile ("ecall");
 }
