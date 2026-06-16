@@ -27,6 +27,11 @@ cpp generalno:
         KSemaphore sem(5);    // ok
         KSemaphore sem{5};    // ok
 
+    int* x; -> int*
+    &x -> int**
+    *x -> int
+
+
 
 
 za posle:
@@ -34,3 +39,4 @@ za posle:
     stvec da upisem negde da nije main kako bih smanjio linije mejna mozda
     mozda da sputim stack_size na 512.
     brojevi random ne rade???
+    u ConsumerProducer svim sam stavio fiksno broj threadova i velicinu bafera i 122 linija komentar

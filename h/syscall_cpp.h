@@ -24,7 +24,6 @@ private:
     void* arg;
     static void threadWrapper(void* thread);
 };
-/*
 class Semaphore {
 public:
     Semaphore (unsigned init = 1);
@@ -33,7 +32,7 @@ public:
     int signal ();
 private:
     sem_t myHandle;
-};*//*
+};/*
 class PeriodicThread : public Thread {
 public:
     void terminate ();

@@ -117,25 +117,34 @@ void riscV::handleTrap(uint64* frame) {
                 break;
             }
             case CODE_SEM_SIGNAL: {
-
+                Ksemaphore* handle = (Ksemaphore*)arg1;
+                ret = handle->signal(1);
                 break;
             }
             case CODE_SEM_WAIT_N: {
+                uint64 n = (uint64)arg1;
+                Ksemaphore* handle = (Ksemaphore*)arg2;
+                handle->wait(n);
+                ret = PCB::running->getSemRetVal();
                 break;
             }
             case CODE_SEM_SIGNAL_N: {
+                uint64 n = (uint64)arg1;
+                Ksemaphore* handle = (Ksemaphore*)arg2;
+                ret = handle->signal(n);
                 break;
             }
-
-
-
             case CODE_GETC : {
-                ret = (uint64)__getc();
+                char c;
+                do {
+                    c = __getc();
+                } while (c == -1);
+                ret = (uint64)c;
                 break;
             }
             case CODE_PUTC : {
                 __putc((char)arg1);
-                ret = 0;
+                //ret = 0;
                 break;
             }
         }
@@ -156,7 +165,8 @@ void riscV::handleTrap(uint64* frame) {
     else if (scause == EXTERNAL_INTERRUPT) {        // konzola
         uint64 volatile sepc = r_sepc() + 4;
         uint64 volatile sstatus = r_sstatus();
-        plic_complete(plic_claim());
+        console_handler();
+        //plic_complete(plic_claim());
         w_sstatus(sstatus);
         w_sepc(sepc);
     }

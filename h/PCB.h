@@ -17,8 +17,8 @@ public:
     void setPrivileged(bool f) { privileged = f; }
     bool isBlocked() const { return blocked; }
     void setBlocked(bool f) { blocked = f; }
-    int getSemRetVal() const { return semRetVal; }
-    void setSemRetVal(int v) { semRetVal = v; }
+    int getSemRetVal() const { return semRetValue; }
+    void setSemRetVal(int v) { semRetValue = v; }
 
     using Body = void (*)(void*);
     static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
@@ -40,7 +40,7 @@ private:
         }),
         finished(false),
         blocked(false),
-        semRetVal(0),
+        semRetValue(0)
     {
         if (body != nullptr) { Scheduler::put(this); }
     }

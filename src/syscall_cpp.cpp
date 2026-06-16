@@ -35,6 +35,25 @@ void Thread::threadWrapper(void* thread) {
     ((Thread*)thread)->run();
 }
 
+int Thread::sleep(time_t period) {
+    return -1;
+}
+Semaphore::Semaphore(unsigned init) : myHandle(nullptr) {
+    sem_open(&myHandle, init);
+}
+
+Semaphore::~Semaphore() {
+    sem_close(myHandle);
+}
+
+int Semaphore::wait() {
+    return sem_wait(myHandle);
+}
+
+int Semaphore::signal() {
+    return sem_signal(myHandle);
+}
+
 
 char Console::getc() {
     return ::getc();

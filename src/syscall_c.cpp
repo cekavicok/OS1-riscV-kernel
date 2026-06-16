@@ -70,7 +70,7 @@ int sem_open(sem_t *handle, unsigned init) {
     return ret;
 }
 
-int sem_close(sem_t *handle) {
+int sem_close(sem_t handle) {
     __asm__ volatile("mv a1, %0" : : "r" (handle));
     __asm__ volatile("mv a0, %0" : : "r" (CODE_SEM_CLOSE));
     __asm__ volatile("ecall");
@@ -124,6 +124,7 @@ char getc() {
     char c;
     __asm__ volatile("mv %0, a0" : "=r" (c));
     return c;
+
 }
 
 void putc(char c) {

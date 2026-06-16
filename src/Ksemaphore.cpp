@@ -3,6 +3,7 @@
 //
 
 #include "../h/Ksemaphore.h"
+#include "../h/MemoryAllocator.h"
 
 Ksemaphore* Ksemaphore::createSemaphore(unsigned init) {
     return new Ksemaphore(init);
@@ -65,6 +66,14 @@ int Ksemaphore::close() {
         delete w;
     }
     return 0;
+}
+
+void* Ksemaphore::operator new(size_t n) {
+    return MemoryAllocator::mem_alloc(n / MEM_BLOCK_SIZE + (n % MEM_BLOCK_SIZE != 0 ? 1 : 0));
+}
+
+void Ksemaphore::operator delete(void* p) noexcept {
+    MemoryAllocator::mem_free(p);
 }
 
 
