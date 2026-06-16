@@ -8,6 +8,7 @@
 #include "../h/print.h"
 #include "../h/PCB.h"
 #include "../lib/console.h"
+#include "../h/Ksemaphore.h"
 
 static constexpr uint64 ECALL_FROM_USER_MODE = 0x8UL;
 static constexpr uint64 ECALL_FROM_SUPERVISOR_MODE = 0x9UL;
@@ -97,6 +98,37 @@ void riscV::handleTrap(uint64* frame) {
                 PCB::dispatch();
                 break;
             }
+            case CODE_SEM_OPEN: {
+                sem_t* handle = (sem_t*)arg2;
+                unsigned init = (unsigned)arg1;
+                *handle = Ksemaphore::createSemaphore(init);
+                ret = *handle != nullptr ? 0 : -1;
+                break;
+            }
+            case CODE_SEM_CLOSE: {
+                Ksemaphore* handle = (Ksemaphore*)arg1;
+                ret = handle->close();
+                break;
+            }
+            case CODE_SEM_WAIT: {
+                Ksemaphore* handle = (Ksemaphore*)arg1;
+                handle->wait(1);
+                ret = PCB::running->getSemRetVal();
+                break;
+            }
+            case CODE_SEM_SIGNAL: {
+
+                break;
+            }
+            case CODE_SEM_WAIT_N: {
+                break;
+            }
+            case CODE_SEM_SIGNAL_N: {
+                break;
+            }
+
+
+
             case CODE_GETC : {
                 ret = (uint64)__getc();
                 break;

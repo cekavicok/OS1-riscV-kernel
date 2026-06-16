@@ -13,13 +13,19 @@ asm:
     ld/sd -> 8B tj 64b
 
 
+
     0(%1) je indirektno adresiranje, uvek mora offset cak i kad je 0
     __asm__ volatile ("ld %0, 0(%1)" : "=r"(code) : "r"(base + A0_OFFSET));
+
 
 
 cpp generalno:
     static -> pripada klasi, a ne instanci
     constexpr garantuje compile time const bez zauzimanja memorije
+    explicit -> sprecava implicitnu konverziju npr:
+        KSemaphore sem = 5;   // greška
+        KSemaphore sem(5);    // ok
+        KSemaphore sem{5};    // ok
 
 
 

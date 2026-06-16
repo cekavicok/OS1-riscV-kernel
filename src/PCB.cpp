@@ -31,9 +31,8 @@ void PCB::userBodyWrapper() {
 
 void PCB::dispatch() {
     PCB* old = running;
-
     //printStr("D:");printInt((uint64)old);printStr("->");
-    if (!old->isFinished()) {
+    if (!old->isFinished() && !old->isBlocked()) {
         Scheduler::put(old);
     }
     running = Scheduler::get();

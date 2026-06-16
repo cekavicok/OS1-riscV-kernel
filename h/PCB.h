@@ -15,6 +15,10 @@ public:
     void setFinished(bool f) { finished = f; }
     bool isPrivileged() const { return privileged; }
     void setPrivileged(bool f) { privileged = f; }
+    bool isBlocked() const { return blocked; }
+    void setBlocked(bool f) { blocked = f; }
+    int getSemRetVal() const { return semRetVal; }
+    void setSemRetVal(int v) { semRetVal = v; }
 
     using Body = void (*)(void*);
     static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
@@ -34,7 +38,10 @@ private:
             body != nullptr ? (uint64)&wrapper : 0,
             stack != nullptr ? (uint64)&stack[STACK_SIZE] : 0
         }),
-        finished(false) {
+        finished(false),
+        blocked(false),
+        semRetVal(0),
+    {
         if (body != nullptr) { Scheduler::put(this); }
     }
 
@@ -50,7 +57,8 @@ private:
     bool privileged;
     Context context;
     bool finished;
-
+    bool blocked;
+    int semRetValue;
     static void wrapper();
     static void userBodyWrapper();
     static void contextSwitch(Context *oldContext, Context *newContext);
