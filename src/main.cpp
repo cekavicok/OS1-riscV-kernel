@@ -5,6 +5,7 @@
 #include "../h/PCB.h"
 #include "../h/workers.h"
 #include "../h/print.h"
+#include "../h/semaphoreTest.h"
 //clean->qemu
 
 extern void userMain();
@@ -15,10 +16,15 @@ void usermainWrapper(void* thr) {
 
 int main(){
     riscV::w_stvec((uint64) &riscV::trapRoutine);
+
+
     PCB* threads[2];
 
     thread_create(&threads[0], nullptr, nullptr);
     PCB::running = threads[0];
+
+    //TEST ZA SEMAPHORE IZ semaphoreTest
+    //SemaphoreTest();
 
     thread_create(&threads[1], usermainWrapper, nullptr);
     while (!(threads[1]->isFinished())) {

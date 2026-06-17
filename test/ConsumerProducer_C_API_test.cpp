@@ -3,6 +3,7 @@
 
 #include "buffer.hpp"
 
+extern char digits[];
 static sem_t waitForAll;
 
 struct thread_data {
@@ -83,15 +84,14 @@ void producerConsumer_C_API() {
     printString("Unesite broj proizvodjaca?\n");
     getString(input, 30);
     threadNum = stringToInt(input);
-
     printString("Unesite velicinu bafera?\n");
     getString(input, 30);
     n = stringToInt(input);
 
+
     printString("Broj proizvodjaca "); printInt(threadNum);
     printString(" i velicina bafera "); printInt(n);
     printString(".\n");
-
     if(threadNum > n) {
         printString("Broj proizvodjaca ne sme biti manji od velicine bafera!\n");
         return;
