@@ -19,9 +19,14 @@ public:
     void setBlocked(bool f) { blocked = f; }
     int getSemRetVal() const { return semRetValue; }
     void setSemRetVal(int v) { semRetValue = v; }
+    uint64 getTimeSlice() const { return timeSlice; }
+    void setTimeSlice(uint64 v) { timeSlice = v; }
+
 
     using Body = void (*)(void*);
-    static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
+
+
+    static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice);
     static void yield();
 
     static PCB* running;
@@ -29,7 +34,7 @@ public:
 
 
 private:
-    PCB(Body body, void* arg, uint64* stack, bool privileged) :
+    PCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice) :
         body(body),
         arg(arg),
         stack(stack),
@@ -40,7 +45,8 @@ private:
         }),
         finished(false),
         blocked(false),
-        semRetValue(0)
+        semRetValue(0),
+        timeSlice(timeSlice)
     {
         if (body != nullptr) { Scheduler::put(this); }
     }
@@ -59,11 +65,18 @@ private:
     bool finished;
     bool blocked;
     int semRetValue;
+    uint64 timeSlice;
+
+    friend class riscV;
+
     static void wrapper();
     static void userBodyWrapper();
     static void contextSwitch(Context *oldContext, Context *newContext);
 
+    static uint64 timeSliceCounter;
+
     static uint64 constexpr STACK_SIZE = 1024;
+    static uint64 constexpr TIME_SLICE = 2;
 
 };
 

@@ -10,8 +10,10 @@
 
 PCB *PCB::running = nullptr;
 
-PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged) {
-    return new PCB(body, arg, stack, privileged);
+uint64 PCB::timeSliceCounter = 0;
+
+PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice) {
+    return new PCB(body, arg, stack, privileged, timeSlice);
 }
 
 void PCB::yield() {

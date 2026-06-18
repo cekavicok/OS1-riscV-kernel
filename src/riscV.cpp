@@ -12,11 +12,14 @@
 
 static constexpr uint64 ECALL_FROM_USER_MODE = 0x8UL;
 static constexpr uint64 ECALL_FROM_SUPERVISOR_MODE = 0x9UL;
-static constexpr uint64 SOFTWARE_INTERRUPT = 0x8000000000000001UL; //tajmer prekid
-static constexpr uint64 EXTERNAL_INTERRUPT = 0x8000000000000009UL; //spoljasnji prekid
 static constexpr uint64 ILLEGAL_INSTRUCTION = 0x2UL; //supervisor instr iz user moda
 static constexpr uint64 ILLEGAL_READ = 0x5UL; //adresa citanja
 static constexpr uint64 ILLEGAL_WRITE = 0x7UL; //adresa upisa
+
+//1 na najvisem bitu je neki interrupt tj 1000...
+static constexpr uint64 SOFTWARE_INTERRUPT = 0x8000000000000001UL; //tajmer prekid
+static constexpr uint64 EXTERNAL_INTERRUPT = 0x8000000000000009UL; //spoljasnji prekid
+
 
 
 
@@ -154,19 +157,32 @@ void riscV::handleTrap(uint64* frame) {
         w_sstatus(sstatus);
         w_sepc(sepc);
     }
-    else if (scause == SOFTWARE_INTERRUPT) {        // tajmer
+    else if (scause == SOFTWARE_INTERRUPT) { // tajmer interapt
 
-        uint64 volatile sepc = r_sepc();
-        uint64 volatile sstatus = r_sstatus();
-        __asm__ volatile("csrc sip, %0" : : "r"(0x2UL));
-        w_sstatus(sstatus);
-        w_sepc(sepc);
+        //uint64 volatile sepc = r_sepc();
+        //uint64 volatile sstatus = r_sstatus();
+
+        PCB::timeSliceCounter++;
+        if (PCB::timeSliceCounter >= PCB::running->getTimeSlice()) {
+            uint64 volatile sepc = r_sepc();
+            uint64 volatile sstatus = r_sstatus();
+            PCB::timeSliceCounter = 0;
+            PCB::dispatch();
+            w_sstatus(sstatus);
+            w_sepc(sepc);
+        }
+        mask_clear_sip(SIP_SSIP);
+
+        //w_sstatus(sstatus);
+        //w_sepc(sepc);
     }
-    else if (scause == EXTERNAL_INTERRUPT) {        // konzola
+    else if (scause == EXTERNAL_INTERRUPT) { // konzola
         uint64 volatile sepc = r_sepc() + 4;
         uint64 volatile sstatus = r_sstatus();
+
         console_handler();
         //plic_complete(plic_claim());
+
         w_sstatus(sstatus);
         w_sepc(sepc);
     }
@@ -181,6 +197,17 @@ void riscV::handleTrap(uint64* frame) {
     else if (scause == ILLEGAL_WRITE) {
         printStr("radi write\n");
         shutdown();
+    }
+    else {
+        printStr("UNEXPECTED ELSE IN RISCV.cpp\n");
+        printStr("SCAUSE\n");
+        printInt(r_scause());
+        printStr("\n");
+        printStr("STVAL\n");
+        printInt(r_stval());
+        printStr("\n");
+        printStr("SEPC\n");
+        printInt(r_sepc());
     }
 
 

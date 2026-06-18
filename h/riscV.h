@@ -50,6 +50,9 @@ public:
     static void mask_set_sstatus(uint64 mask);
     static void mask_clear_sstatus(uint64 mask);
 
+    static void mask_set_sip(uint64 mask);
+    static void mask_clear_sip(uint64 mask);
+
     static uint64 r_sip();
     static void w_sip(uint64 sip);
 
@@ -121,6 +124,16 @@ inline void riscV::mask_set_sstatus(uint64 mask) {
 
 inline void riscV::mask_clear_sstatus(uint64 mask) {
     __asm__ volatile("csrc sstatus, %0" : : "r" (mask));
+}
+
+inline void riscV::mask_set_sip(uint64 mask) {
+    //csrs samo date bitove stavlja na 1 tj radi OR
+    //csrc sve bitove maske koji su 1 postavi na 0, AND sa komplementom
+    __asm__ volatile("csrs sip, %0" : : "r" (mask));
+}
+
+inline void riscV::mask_clear_sip(uint64 mask) {
+    __asm__ volatile("csrc sip, %0" : : "r" (mask));
 }
 
 inline void riscV::shutdown() {
