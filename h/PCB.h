@@ -26,7 +26,7 @@ public:
     using Body = void (*)(void*);
 
 
-    static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice);
+    static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
     static void yield();
 
     static PCB* running;
@@ -34,19 +34,19 @@ public:
 
 
 private:
-    PCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice) :
+    PCB(Body body, void* arg, uint64* stack, bool privileged) :
         body(body),
         arg(arg),
         stack(stack),
         privileged(privileged),
         context({
             body != nullptr ? (uint64)&wrapper : 0,
-            stack != nullptr ? (uint64)&stack[STACK_SIZE] : 0
+            stack != nullptr ? (uint64)((uint8*)stack + 8192) : 0
         }),
         finished(false),
         blocked(false),
         semRetValue(0),
-        timeSlice(timeSlice)
+        timeSlice(body != nullptr ? DEFAULT_TIME_SLICE : (uint64)-1)
     {
         if (body != nullptr) { Scheduler::put(this); }
     }
@@ -76,7 +76,7 @@ private:
     static uint64 timeSliceCounter;
 
     static uint64 constexpr STACK_SIZE = 1024;
-    static uint64 constexpr TIME_SLICE = 2;
+    //static uint64 constexpr TIME_SLICE = 2;
 
 };
 

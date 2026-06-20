@@ -1,5 +1,6 @@
 #include "../h/syscall_cpp.h"
 #include "../lib/console.h"
+#include "../h/MemoryAllocator.h"
 
 void* operator new(uint64 size) {
     return mem_alloc(size);

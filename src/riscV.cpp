@@ -158,10 +158,14 @@ void riscV::handleTrap(uint64* frame) {
         w_sepc(sepc);
     }
     else if (scause == SOFTWARE_INTERRUPT) { // tajmer interapt
-
-        //uint64 volatile sepc = r_sepc();
-        //uint64 volatile sstatus = r_sstatus();
-
+        mask_clear_sip(SIP_SSIP);
+        //TEST
+        if (PCB::running == nullptr) {
+            const char* m = "TIMER NULL\n";
+            for (int i = 0; m[i]; i++) __putc(m[i]);
+            shutdown();
+        }
+        //TEST END :)
         PCB::timeSliceCounter++;
         if (PCB::timeSliceCounter >= PCB::running->getTimeSlice()) {
             uint64 volatile sepc = r_sepc();
@@ -171,10 +175,8 @@ void riscV::handleTrap(uint64* frame) {
             w_sstatus(sstatus);
             w_sepc(sepc);
         }
-        mask_clear_sip(SIP_SSIP);
 
-        //w_sstatus(sstatus);
-        //w_sepc(sepc);
+
     }
     else if (scause == EXTERNAL_INTERRUPT) { // konzola
         uint64 volatile sepc = r_sepc() + 4;
@@ -191,7 +193,25 @@ void riscV::handleTrap(uint64* frame) {
         shutdown();
     }
     else if (scause == ILLEGAL_READ) {
-        printStr("radi read\n");
+        static const char* hexDigits = "0123456789ABCDEF";
+        uint64 sepc_val = r_sepc();
+        uint64 stval_val = r_stval();
+        uint64 sp_val;
+        __asm__ volatile ("mv %0, sp" : "=r"(sp_val));
+
+        const char* m1 = "READ FAULT sepc=0x";
+        for (int i = 0; m1[i]; i++) __putc(m1[i]);
+        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sepc_val >> i) & 0xF]);
+
+        const char* m2 = " stval=0x";
+        for (int i = 0; m2[i]; i++) __putc(m2[i]);
+        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(stval_val >> i) & 0xF]);
+
+        const char* m3 = " sp=0x";
+        for (int i = 0; m3[i]; i++) __putc(m3[i]);
+        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sp_val >> i) & 0xF]);
+
+        __putc('\n');
         shutdown();
     }
     else if (scause == ILLEGAL_WRITE) {

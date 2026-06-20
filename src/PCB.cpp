@@ -7,19 +7,19 @@
 #include "../h/scheduler.h"
 #include "../h/print.h"
 #include "../h/syscall_c.h"
+#include "../lib/console.h"
 
 PCB *PCB::running = nullptr;
 
 uint64 PCB::timeSliceCounter = 0;
 
-PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged, uint64 timeSlice) {
-    return new PCB(body, arg, stack, privileged, timeSlice);
+PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged) {
+    return new PCB(body, arg, stack, privileged);
 }
 
 void PCB::yield() {
-    riscV::pushRegisters();
-    PCB::dispatch();
-    riscV::popRegisters();
+    __asm__ volatile("li a0, 13");
+    __asm__ volatile("ecall");
 }
 
 void PCB::wrapper() {
@@ -33,11 +33,19 @@ void PCB::userBodyWrapper() {
 
 void PCB::dispatch() {
     PCB* old = running;
-    //printStr("D:");printInt((uint64)old);printStr("->");
     if (!old->isFinished() && !old->isBlocked()) {
         Scheduler::put(old);
     }
     running = Scheduler::get();
-    //printStr(">");printInt((uint64)running);printStr("\n");
+    if (running == nullptr) {
+        const char* m = "DISPATCH NULL\n";
+        for (int i = 0; m[i]; i++) __putc(m[i]);
+        riscV::shutdown();
+    }
+    /*if (running->isPrivileged() || running->isMain())
+        riscV::mask_set_sstatus(riscV::SSTATUS_SPP);   // vrati u S-mod
+    else
+        riscV::mask_clear_sstatus(riscV::SSTATUS_SPP);   // vrati u U-mod */
+
     PCB::contextSwitch(&old->context, &running->context);
 }
