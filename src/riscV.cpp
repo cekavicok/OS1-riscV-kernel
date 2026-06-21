@@ -46,19 +46,6 @@ void riscV::setSppSpie(void (*entry)()) {
 void riscV::handleTrap(uint64* frame) {
     uint64 scause = r_scause();
 
-
-    /*if (scause != ECALL_FROM_USER_MODE && scause != ECALL_FROM_SUPERVISOR_MODE
-        && scause != SOFTWARE_INTERRUPT && scause != EXTERNAL_INTERRUPT) {
-        printStr("!!! TRAP scause=");
-        printInt(scause);
-        printStr(" sepc=");
-        printInt(r_sepc());
-        printStr(" stval=");
-        printInt(r_stval());
-        printStr("\n");
-        while (1);
-        }*/
-
     if (scause == ECALL_FROM_USER_MODE || scause == ECALL_FROM_SUPERVISOR_MODE) {
         uint64 volatile sepc = r_sepc() + 4;
         uint64 volatile sstatus = r_sstatus();
@@ -159,13 +146,6 @@ void riscV::handleTrap(uint64* frame) {
     }
     else if (scause == SOFTWARE_INTERRUPT) { // tajmer interapt
         mask_clear_sip(SIP_SSIP);
-        //TEST
-        if (PCB::running == nullptr) {
-            const char* m = "TIMER NULL\n";
-            for (int i = 0; m[i]; i++) __putc(m[i]);
-            shutdown();
-        }
-        //TEST END :)
         PCB::timeSliceCounter++;
         if (PCB::timeSliceCounter >= PCB::running->getTimeSlice()) {
             uint64 volatile sepc = r_sepc();
@@ -175,8 +155,6 @@ void riscV::handleTrap(uint64* frame) {
             w_sstatus(sstatus);
             w_sepc(sepc);
         }
-
-
     }
     else if (scause == EXTERNAL_INTERRUPT) { // konzola
         uint64 volatile sepc = r_sepc() + 4;
@@ -189,45 +167,43 @@ void riscV::handleTrap(uint64* frame) {
         w_sepc(sepc);
     }
     else if (scause == ILLEGAL_INSTRUCTION) {
-        printStr("radi ins\n");
+        for(char ch : "Illegal instruction\n")
+            *((volatile char*)CONSOLE_TX_DATA) = ch;
         shutdown();
     }
     else if (scause == ILLEGAL_READ) {
-        static const char* hexDigits = "0123456789ABCDEF";
-        uint64 sepc_val = r_sepc();
-        uint64 stval_val = r_stval();
-        uint64 sp_val;
-        __asm__ volatile ("mv %0, sp" : "=r"(sp_val));
-
-        const char* m1 = "READ FAULT sepc=0x";
-        for (int i = 0; m1[i]; i++) __putc(m1[i]);
-        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sepc_val >> i) & 0xF]);
-
-        const char* m2 = " stval=0x";
-        for (int i = 0; m2[i]; i++) __putc(m2[i]);
-        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(stval_val >> i) & 0xF]);
-
-        const char* m3 = " sp=0x";
-        for (int i = 0; m3[i]; i++) __putc(m3[i]);
-        for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sp_val >> i) & 0xF]);
-
-        __putc('\n');
+        // static const char* hexDigits = "0123456789ABCDEF";
+        // uint64 sepc_val = r_sepc();
+        // uint64 stval_val = r_stval();
+        // uint64 sp_val;
+        // __asm__ volatile ("mv %0, sp" : "=r"(sp_val));
+        //
+        // const char* m1 = "READ FAULT sepc=0x";
+        // for (int i = 0; m1[i]; i++) __putc(m1[i]);
+        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sepc_val >> i) & 0xF]);
+        //
+        // const char* m2 = " stval=0x";
+        // for (int i = 0; m2[i]; i++) __putc(m2[i]);
+        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(stval_val >> i) & 0xF]);
+        //
+        // const char* m3 = " sp=0x";
+        // for (int i = 0; m3[i]; i++) __putc(m3[i]);
+        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sp_val >> i) & 0xF]);
+        //
+        // __putc('\n');
+        for(char ch : "Illegal read\n")
+            *((volatile char*)CONSOLE_TX_DATA) = ch;
         shutdown();
     }
     else if (scause == ILLEGAL_WRITE) {
-        printStr("radi write\n");
+        for(char ch : "Illegal write\n")
+            *((volatile char*)CONSOLE_TX_DATA) = ch;
         shutdown();
     }
     else {
-        printStr("UNEXPECTED ELSE IN RISCV.cpp\n");
-        printStr("SCAUSE\n");
-        printInt(r_scause());
-        printStr("\n");
-        printStr("STVAL\n");
-        printInt(r_stval());
-        printStr("\n");
-        printStr("SEPC\n");
-        printInt(r_sepc());
+        for(char ch : "Unhandled case\n")
+            *((volatile char*)CONSOLE_TX_DATA) = ch;
+        shutdown();
     }
 
 

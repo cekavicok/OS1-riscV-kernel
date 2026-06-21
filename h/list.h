@@ -5,6 +5,9 @@
 #ifndef PROJECT_BASE_LIST_H
 #define PROJECT_BASE_LIST_H
 
+#include "../lib/hw.h"
+#include "MemoryAllocator.h"
+
 template<typename T>
 class List {
 private:
@@ -16,6 +19,31 @@ private:
     Elem* head;
     Elem* tail;
     unsigned long size;
+
+    // Elem alokacija/dealokacija ide DIREKTNO preko MemoryAllocator-a,
+    // BEZ ecall-a. List se koristi iz Scheduler::put/get, koji se
+    // pozivaju iz PCB::dispatch(), koji se zove i DIREKTNO iz tajmer
+    // ISR-a (ne preko ecall-a) - ecall IZ trap handlera je nepotreban
+    // ugnjezden trap koji ne treba da postoji.
+    //
+    // VAZNO: MemoryAllocator::mem_alloc ocekuje BROJ BLOKOVA
+    // (MEM_BLOCK_SIZE = 64B), NE bajtove - ista konverzija koju
+    // syscall_c.cpp::mem_alloc radi pre ecall-a, ovde radimo bez ecall-a.
+    static Elem* allocElem(T* data, Elem* next) {
+        size_t blocks = sizeof(Elem) / MEM_BLOCK_SIZE;
+        if (sizeof(Elem) % MEM_BLOCK_SIZE != 0) blocks++;
+        void* mem = MemoryAllocator::mem_alloc(blocks);
+        if (!mem) return nullptr;
+        Elem* elem = (Elem*)mem;
+        elem->data = data;
+        elem->next = next;
+        return elem;
+    }
+
+    static void freeElem(Elem* elem) {
+        MemoryAllocator::mem_free(elem);
+    }
+
 public:
     List() : head(0), tail(0), size(0) {}
     List(const List<T>&) = delete;
@@ -26,7 +54,8 @@ public:
     bool isEmpty() const { return head == nullptr; }
 
     void addFirst(T* data) {
-        Elem* elem = new Elem(data, head);
+        Elem* elem = allocElem(data, head);
+        if (!elem) return;
         head = elem;
         if (!tail)
             tail = head;
@@ -34,7 +63,8 @@ public:
     }
 
     void addLast(T* data) {
-        Elem* elem = new Elem(data, 0);
+        Elem* elem = allocElem(data, 0);
+        if (!elem) return;
         if (tail) {
             tail->next = elem;
             tail = elem;
@@ -52,7 +82,7 @@ public:
             tail = 0;
         --size;
         T* ret = elem->data;
-        delete elem;
+        freeElem(elem);
         return ret;
     }
 
@@ -74,7 +104,7 @@ public:
         tail = prev;
         --size;
         T* ret = elem->data;
-        delete elem;
+        freeElem(elem);
         return ret;
     }
 
@@ -92,7 +122,7 @@ public:
                 else head = curr->next;
                 if (curr == tail) tail = prev;
                 --size;
-                delete curr;
+                freeElem(curr);
                 return true;
             }
             prev = curr;
@@ -100,6 +130,5 @@ public:
         return false;
     }
 };
-
 
 #endif //PROJECT_BASE_LIST_H

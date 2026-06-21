@@ -41,7 +41,7 @@ private:
         privileged(privileged),
         context({
             body != nullptr ? (uint64)&wrapper : 0,
-            stack != nullptr ? (uint64)((uint8*)stack + 8192) : 0
+            stack != nullptr ? (uint64)((uint8*)stack + DEFAULT_STACK_SIZE) : 0
         }),
         finished(false),
         blocked(false),

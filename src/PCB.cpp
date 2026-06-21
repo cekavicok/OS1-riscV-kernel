@@ -9,6 +9,7 @@
 #include "../h/syscall_c.h"
 #include "../lib/console.h"
 
+PCB* g_running_shadow = nullptr;
 PCB *PCB::running = nullptr;
 
 uint64 PCB::timeSliceCounter = 0;
@@ -36,16 +37,15 @@ void PCB::dispatch() {
     if (!old->isFinished() && !old->isBlocked()) {
         Scheduler::put(old);
     }
+
     running = Scheduler::get();
+
     if (running == nullptr) {
         const char* m = "DISPATCH NULL\n";
         for (int i = 0; m[i]; i++) __putc(m[i]);
         riscV::shutdown();
     }
-    /*if (running->isPrivileged() || running->isMain())
-        riscV::mask_set_sstatus(riscV::SSTATUS_SPP);   // vrati u S-mod
-    else
-        riscV::mask_clear_sstatus(riscV::SSTATUS_SPP);   // vrati u U-mod */
+
 
     PCB::contextSwitch(&old->context, &running->context);
 }
