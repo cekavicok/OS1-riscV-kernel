@@ -18,7 +18,7 @@ static const uint8 CODE_SEM_SIGNAL = 0x24;
 static const uint8 CODE_SEM_WAIT_N = 0x25;
 static const uint8 CODE_SEM_SIGNAL_N = 0x26;
 
-static const uint8 CODE_TIME_T = 0x31;
+static const uint8 CODE_TIME_SLEEP = 0x31;
 
 static const uint8 CODE_GETC = 0x41;
 static const uint8 CODE_PUTC = 0x42;
@@ -41,9 +41,13 @@ int sem_signal (sem_t id);
 int sem_wait_n(sem_t id,unsigned n);
 int sem_signal_n(sem_t id,unsigned n);
 
+typedef unsigned long time_t;
+int time_sleep (time_t);
 
 const int EOF = -1;
 char getc();
 void putc(char c);
+
+
 
 #endif

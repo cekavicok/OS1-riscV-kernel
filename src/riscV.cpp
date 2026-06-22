@@ -137,6 +137,10 @@ void riscV::handleTrap(uint64* frame) {
                 //ret = 0;
                 break;
             }
+            case CODE_TIME_SLEEP: {
+                ret = Scheduler::sleep(arg1);
+                break;
+            }
         }
         //upisujem u a0 povratnu vrednost
         //__asm__ volatile("sd %0, 0(%1)" :: "r"(ret), "r"(base + A0_OFFSET) );
@@ -146,6 +150,7 @@ void riscV::handleTrap(uint64* frame) {
     }
     else if (scause == SOFTWARE_INTERRUPT) { // tajmer interapt
         mask_clear_sip(SIP_SSIP);
+        Scheduler::tick();
         PCB::timeSliceCounter++;
         if (PCB::timeSliceCounter >= PCB::running->getTimeSlice()) {
             uint64 volatile sepc = r_sepc();

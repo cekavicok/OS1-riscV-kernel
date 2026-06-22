@@ -21,6 +21,8 @@ public:
     void setSemRetVal(int v) { semRetValue = v; }
     uint64 getTimeSlice() const { return timeSlice; }
     void setTimeSlice(uint64 v) { timeSlice = v; }
+    uint64 getSleepCounter() const { return sleepCounter; }
+    void setSleepCounter(uint64 v) { sleepCounter = v; }
 
 
     using Body = void (*)(void*);
@@ -46,7 +48,8 @@ private:
         finished(false),
         blocked(false),
         semRetValue(0),
-        timeSlice(body != nullptr ? DEFAULT_TIME_SLICE : (uint64)-1)
+        timeSlice(body != nullptr ? DEFAULT_TIME_SLICE : (uint64)-1),
+        sleepCounter(0)
     {
         if (body != nullptr) { Scheduler::put(this); }
     }
@@ -66,7 +69,7 @@ private:
     bool blocked;
     int semRetValue;
     uint64 timeSlice;
-
+    uint64 sleepCounter;
     friend class riscV;
 
     static void wrapper();
@@ -76,8 +79,6 @@ private:
     static uint64 timeSliceCounter;
 
     static uint64 constexpr STACK_SIZE = 1024;
-    //static uint64 constexpr TIME_SLICE = 2;
-
 };
 
 #endif //PROJECT_BASE_PCB_HPP

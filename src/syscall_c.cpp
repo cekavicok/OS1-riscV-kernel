@@ -117,6 +117,15 @@ int sem_signal_n(sem_t id, unsigned n) {
     return ret;
 }
 
+int time_sleep(time_t ticks) {
+    __asm__ volatile("mv a1, %0" : : "r" (ticks));
+    __asm__ volatile("mv a0, %0" : : "r" (CODE_TIME_SLEEP));
+    __asm__ volatile("ecall");
+    int ret;
+    __asm__ volatile("mv %0, a0" : "=r" (ret));
+    return ret;
+}
+
 
 char getc() {
     __asm__ volatile("mv a0, %0" : : "r" (CODE_GETC));

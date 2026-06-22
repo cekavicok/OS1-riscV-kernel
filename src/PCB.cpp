@@ -37,15 +37,6 @@ void PCB::dispatch() {
     if (!old->isFinished() && !old->isBlocked()) {
         Scheduler::put(old);
     }
-
     running = Scheduler::get();
-
-    if (running == nullptr) {
-        const char* m = "DISPATCH NULL\n";
-        for (int i = 0; m[i]; i++) __putc(m[i]);
-        riscV::shutdown();
-    }
-
-
     PCB::contextSwitch(&old->context, &running->context);
 }
