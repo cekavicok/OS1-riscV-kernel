@@ -33,7 +33,7 @@ void Scheduler::tick() {
         PCB* p = sleepQueue.removeFirst();
         uint64 rem = p->getSleepCounter() - 1;
         if (rem == 0) {
-            p->setBlocked(true);
+            p->setBlocked(false);
             put(p);
         } else {
             p->setSleepCounter(rem);

@@ -13,7 +13,7 @@ static inline size_t alajn(size_t size) {
 }
 
 Kbuffer::Kbuffer(int size): size(size+1), head(0), tail(0) {
-    data = (char*) MemoryAllocator::mem_alloc(alajn((size_t)size));
+    data = (char*) MemoryAllocator::mem_alloc(alajn((size_t)this->size));
     spaceAvailable = Ksemaphore::createSemaphore(size);
     itemAvailable = Ksemaphore::createSemaphore(0);
     mutex = Ksemaphore::createSemaphore(1);

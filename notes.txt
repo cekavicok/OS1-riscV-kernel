@@ -37,9 +37,7 @@ cpp generalno:
 
 za posle:
     promeniti list.h i list.cpp da budu next u samom TCB zbog mem alokacije str. 25!
-    stvec da upisem negde da nije main kako bih smanjio linije mejna mozda
     mozda da sputim stack_size na 512.
-    brojevi random ne rade??? problem u printInt vrv
     prebaciti i u userMode asinhronu nakon implementiranja
     popraviti da mem_alloc sam radi alighn umesto da moram svuda da poravnavam :)
 

@@ -19,8 +19,11 @@ PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged) {
 }
 
 void PCB::yield() {
-    __asm__ volatile("li a0, 13");
+    __asm__ volatile("li a0, 0x13");
     __asm__ volatile("ecall");
+    //thread_dispatch();
+
+
 }
 
 void PCB::wrapper() {

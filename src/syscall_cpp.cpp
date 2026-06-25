@@ -19,7 +19,9 @@ void operator delete[](void* ptr) {
 }
 
 Thread::Thread(void (*body)(void*), void* arg) : myHandle(nullptr), body(body), arg(arg) {}
+
 Thread::Thread() : myHandle(nullptr), body(threadWrapper), arg(this) {}
+
 Thread::~Thread() {
     delete myHandle;
 }
@@ -37,7 +39,7 @@ void Thread::threadWrapper(void* thread) {
 }
 
 int Thread::sleep(time_t period) {
-    return -1;
+    return time_sleep(period);
 }
 Semaphore::Semaphore(unsigned init) : myHandle(nullptr) {
     sem_open(&myHandle, init);
@@ -55,6 +57,19 @@ int Semaphore::signal() {
     return sem_signal(myHandle);
 }
 
+PeriodicThread::PeriodicThread(time_t period) : Thread(), period(period) {}
+
+void PeriodicThread::terminate() {
+    period = 0;
+}
+
+void PeriodicThread::run() {
+    while (period != 0) {
+        periodicActivation();
+        //if (period != 0)
+        time_sleep(period);
+    }
+}
 
 char Console::getc() {
     return ::getc();

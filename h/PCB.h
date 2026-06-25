@@ -78,7 +78,7 @@ private:
 
     static uint64 timeSliceCounter;
 
-    static uint64 constexpr STACK_SIZE = 1024;
+    //static uint64 constexpr STACK_SIZE = 1024;
 };
 
 #endif //PROJECT_BASE_PCB_HPP
