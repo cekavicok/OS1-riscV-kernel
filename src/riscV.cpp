@@ -7,6 +7,7 @@
 #include "../h/syscall_c.h"
 #include "../h/print.h"
 #include "../h/PCB.h"
+#include "../h/Kconsole.h"
 #include "../lib/console.h"
 #include "../h/Ksemaphore.h"
 
@@ -125,16 +126,13 @@ void riscV::handleTrap(uint64* frame) {
                 break;
             }
             case CODE_GETC : {
-                char c;
-                do {
-                    c = __getc();
-                } while (c == -1);
-                ret = (uint64)c;
+                ret = (uint64) Kconsole::getc();
                 break;
             }
             case CODE_PUTC : {
-                __putc((char)arg1);
-                //ret = 0;
+
+                Kconsole::putc((char)arg1);
+                ret = 0;
                 break;
             }
             case CODE_TIME_SLEEP: {
@@ -162,11 +160,14 @@ void riscV::handleTrap(uint64* frame) {
         }
     }
     else if (scause == EXTERNAL_INTERRUPT) { // konzola
-        uint64 volatile sepc = r_sepc() + 4;
+        uint64 volatile sepc = r_sepc();
         uint64 volatile sstatus = r_sstatus();
 
-        console_handler();
-        //plic_complete(plic_claim());
+        int irq = plic_claim();
+        if (irq == CONSOLE_IRQ) {
+            Kconsole::onRxAvailable();
+        }
+        plic_complete(irq);
 
         w_sstatus(sstatus);
         w_sepc(sepc);
@@ -177,25 +178,6 @@ void riscV::handleTrap(uint64* frame) {
         shutdown();
     }
     else if (scause == ILLEGAL_READ) {
-        // static const char* hexDigits = "0123456789ABCDEF";
-        // uint64 sepc_val = r_sepc();
-        // uint64 stval_val = r_stval();
-        // uint64 sp_val;
-        // __asm__ volatile ("mv %0, sp" : "=r"(sp_val));
-        //
-        // const char* m1 = "READ FAULT sepc=0x";
-        // for (int i = 0; m1[i]; i++) __putc(m1[i]);
-        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sepc_val >> i) & 0xF]);
-        //
-        // const char* m2 = " stval=0x";
-        // for (int i = 0; m2[i]; i++) __putc(m2[i]);
-        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(stval_val >> i) & 0xF]);
-        //
-        // const char* m3 = " sp=0x";
-        // for (int i = 0; m3[i]; i++) __putc(m3[i]);
-        // for (int i = 60; i >= 0; i -= 4) __putc(hexDigits[(sp_val >> i) & 0xF]);
-        //
-        // __putc('\n');
         for(char ch : "Illegal read\n")
             *((volatile char*)CONSOLE_TX_DATA) = ch;
         shutdown();

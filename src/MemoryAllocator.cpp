@@ -30,7 +30,8 @@ void* MemoryAllocator::mem_alloc(size_t size) {
     if (size == 0) return nullptr;
 
 
-    //alajn mi ne treba jer syscall_c salje vec poravnatu vrednost
+    //alajn mi ne treba jer syscall_c(ecall) salje vec poravnatu vrednost
+    //ipak je trebao jer sam pisao deset puta
     size_t aligned = size*MEM_BLOCK_SIZE;
 
 

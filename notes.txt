@@ -30,6 +30,7 @@ cpp generalno:
     int* x; -> int*
     &x -> int**
     *x -> int
+    noexcept -> kaze kompajleru ne bacaj error
 
 
 
@@ -40,3 +41,10 @@ za posle:
     mozda da sputim stack_size na 512.
     brojevi random ne rade??? problem u printInt vrv
     prebaciti i u userMode asinhronu nakon implementiranja
+    popraviti da mem_alloc sam radi alighn umesto da moram svuda da poravnavam :)
+
+
+iz hw.lib tj console
+
+RX: tastatura -> kernel / CONSOLE_RX_DATA / CONSOLE_RX_STATUS
+TX: kernel -> tastatura / CONSOLE_TX_DATA / CONSOLE_TX_STATUS

@@ -10,9 +10,10 @@
 
 
 class Ksemaphore {
+
+public:
     void* operator new(size_t n); //sprecava da se pozove u main new Ksemaphore
     void operator delete(void* p) noexcept;
-public:
     static Ksemaphore* createSemaphore(unsigned init = 1);
     ~Ksemaphore();
 
@@ -26,9 +27,12 @@ private:
     struct Waiter {
         PCB* thread;
         uint64 n;
+        Waiter(PCB* t, uint64 n): thread(t), n(n) {}
+        void* operator new(size_t n);
+        void operator delete(void* p) noexcept;
     };
 
-    void block(uint64 n);
+    void block(uint64 n, uint64 savedSstatus);
     void unblock();
 
     int value;

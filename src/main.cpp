@@ -2,6 +2,7 @@
 #include "../h/riscV.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_cpp.h"
+#include "../h/Kconsole.h"
 #include "../h/PCB.h"
 #include "../h/workers.h"
 #include "../h/print.h"
@@ -30,8 +31,7 @@ int main(){
 
     thread_create(&threads[0], nullptr, nullptr);
     PCB::running = threads[0];
-
-
+    Kconsole::init();
     riscV::mask_set_sstatus(riscV::SSTATUS_SIE);
     thread_create(&threads[1], usermainWrapper, nullptr);
 
