@@ -23,12 +23,14 @@ public:
     void setTimeSlice(uint64 v) { timeSlice = v; }
     uint64 getSleepCounter() const { return sleepCounter; }
     void setSleepCounter(uint64 v) { sleepCounter = v; }
-
+    bool isIdle() const { return idle; }
+    void setIdle(bool f) { idle = f; }
 
     using Body = void (*)(void*);
 
 
     static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
+    static PCB* createIdle(Body body);
     static void yield();
 
     static PCB* running;
@@ -47,6 +49,7 @@ private:
         }),
         finished(false),
         blocked(false),
+        idle(false),
         semRetValue(0),
         timeSlice(body != nullptr ? DEFAULT_TIME_SLICE : (uint64)-1),
         sleepCounter(0)
@@ -67,6 +70,7 @@ private:
     Context context;
     bool finished;
     bool blocked;
+    bool idle;
     int semRetValue;
     uint64 timeSlice;
     uint64 sleepCounter;

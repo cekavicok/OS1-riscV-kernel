@@ -19,9 +19,12 @@ void usermainWrapper(void* thr) {
     userMain();
 
 }
+void idleBody(void*) {
+    while (true) {}
+}
 
 static PCB* threads[2];
-
+static PCB* idle;
 
 
 int main(){
@@ -32,6 +35,10 @@ int main(){
     thread_create(&threads[0], nullptr, nullptr);
     PCB::running = threads[0];
     Kconsole::init();
+
+    idle = PCB::createIdle(idleBody);
+    Scheduler::setIdle(idle);
+
     riscV::mask_set_sstatus(riscV::SSTATUS_SIE);
     thread_create(&threads[1], usermainWrapper, nullptr);
 

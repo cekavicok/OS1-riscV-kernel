@@ -37,10 +37,8 @@ cpp generalno:
 
 za posle:
     promeniti list.h i list.cpp da budu next u samom TCB zbog mem alokacije str. 25!
-    mozda da sputim stack_size na 512.
-    prebaciti i u userMode asinhronu nakon implementiranja
     popraviti da mem_alloc sam radi alighn umesto da moram svuda da poravnavam :)
-
+    dodati idle nit
 
 iz hw.lib tj console
 

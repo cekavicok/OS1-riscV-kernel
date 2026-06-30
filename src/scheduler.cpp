@@ -7,9 +7,19 @@
 
 List<PCB> Scheduler::readyQueue;
 List<PCB> Scheduler::sleepQueue;
+PCB* Scheduler::idleThread =  nullptr;
 
 PCB *Scheduler::get() {
-    return readyQueue.removeFirst();
+    PCB* p = readyQueue.removeFirst();
+    return p ? p : idleThread;
+}
+
+void Scheduler::setIdle(PCB *idle) {
+    idleThread = idle;
+}
+
+void Scheduler::pulIdle(PCB *pcb) {
+    readyQueue.remove(pcb);
 }
 
 void Scheduler::put(PCB *pcb) {

@@ -20,19 +20,8 @@ private:
     Elem* tail;
     unsigned long size;
 
-    // Elem alokacija/dealokacija ide DIREKTNO preko MemoryAllocator-a,
-    // BEZ ecall-a. List se koristi iz Scheduler::put/get, koji se
-    // pozivaju iz PCB::dispatch(), koji se zove i DIREKTNO iz tajmer
-    // ISR-a (ne preko ecall-a) - ecall IZ trap handlera je nepotreban
-    // ugnjezden trap koji ne treba da postoji.
-    //
-    // VAZNO: MemoryAllocator::mem_alloc ocekuje BROJ BLOKOVA
-    // (MEM_BLOCK_SIZE = 64B), NE bajtove - ista konverzija koju
-    // syscall_c.cpp::mem_alloc radi pre ecall-a, ovde radimo bez ecall-a.
     static Elem* allocElem(T* data, Elem* next) {
-        size_t blocks = sizeof(Elem) / MEM_BLOCK_SIZE;
-        if (sizeof(Elem) % MEM_BLOCK_SIZE != 0) blocks++;
-        void* mem = MemoryAllocator::mem_alloc(blocks);
+        void* mem = MemoryAllocator::mem_alloc_alajn(sizeof(Elem));
         if (!mem) return nullptr;
         Elem* elem = (Elem*)mem;
         elem->data = data;

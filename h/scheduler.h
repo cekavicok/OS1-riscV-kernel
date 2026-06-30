@@ -11,11 +11,14 @@ class Scheduler {
 private:
     static List<PCB> readyQueue;
     static List<PCB> sleepQueue;
+    static PCB* idleThread;
 
 public:
 
     static PCB *get();
     static void put(PCB *pcb);
+    static void setIdle(PCB* idle);
+    static void pulIdle(PCB* pcb);
 
     static int sleep(uint64 ticks);
     static void tick();

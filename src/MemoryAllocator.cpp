@@ -7,6 +7,8 @@
 MemoryAllocator::FreeMem* MemoryAllocator::head = nullptr;
 
 
+
+
 void MemoryAllocator::init() {
     static uint8 flag = false;
     //pusta da se jednom inicijalizuje
@@ -19,10 +21,10 @@ void MemoryAllocator::init() {
     head->size = (size_t)HEAP_END_ADDR - (size_t)HEAP_START_ADDR - sizeof(FreeMem);
 }
 
-static inline size_t alajn(size_t size) {
-    size_t blocks = size/MEM_BLOCK_SIZE;
-    if (size%MEM_BLOCK_SIZE) blocks++;
-    return blocks*MEM_BLOCK_SIZE;
+void* MemoryAllocator::mem_alloc_alajn(size_t B) {
+    size_t blocks = B / MEM_BLOCK_SIZE;
+    if (B % MEM_BLOCK_SIZE) blocks++;
+    return mem_alloc(blocks);
 }
 
 void* MemoryAllocator::mem_alloc(size_t size) {

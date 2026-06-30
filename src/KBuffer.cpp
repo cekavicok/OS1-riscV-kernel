@@ -6,14 +6,9 @@
 #include "../h/KBuffer.h"
 #include "../h/MemoryAllocator.h"
 
-static inline size_t alajn(size_t size) {
-    size_t blocks = size/MEM_BLOCK_SIZE;
-    if (size%MEM_BLOCK_SIZE) blocks++;
-    return blocks;
-}
 
 Kbuffer::Kbuffer(int size): size(size+1), head(0), tail(0) {
-    data = (char*) MemoryAllocator::mem_alloc(alajn((size_t)this->size));
+    data = (char*) MemoryAllocator::mem_alloc_alajn((size_t)this->size);
     spaceAvailable = Ksemaphore::createSemaphore(size);
     itemAvailable = Ksemaphore::createSemaphore(0);
     mutex = Ksemaphore::createSemaphore(1);
@@ -55,7 +50,7 @@ bool Kbuffer::try_put(char c) {
 }
 
 void* Kbuffer::operator new(size_t n) {
-    return MemoryAllocator::mem_alloc(alajn(n));
+    return MemoryAllocator::mem_alloc_alajn(n);
 }
 void Kbuffer::operator delete(void* p) noexcept {
     MemoryAllocator::mem_free(p);

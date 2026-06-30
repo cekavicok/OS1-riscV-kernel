@@ -9,7 +9,7 @@
 
 
 void* Ksemaphore::operator new(size_t n) {
-    return MemoryAllocator::mem_alloc(n / MEM_BLOCK_SIZE + (n % MEM_BLOCK_SIZE != 0 ? 1 : 0));
+    return MemoryAllocator::mem_alloc_alajn(n);
 }
 
 void Ksemaphore::operator delete(void* p) noexcept {
@@ -17,7 +17,7 @@ void Ksemaphore::operator delete(void* p) noexcept {
 }
 
 void* Ksemaphore::Waiter::operator new(size_t n) {
-    return MemoryAllocator::mem_alloc(n / MEM_BLOCK_SIZE + (n % MEM_BLOCK_SIZE != 0 ? 1 : 0));
+    return MemoryAllocator::mem_alloc_alajn(n);
 }
 void Ksemaphore::Waiter::operator delete(void* p) noexcept {
     MemoryAllocator::mem_free(p);
@@ -58,6 +58,7 @@ int Ksemaphore::wait(uint64 n) {
     }
     if (value >= (int)n) {
         value = value - (int)n;
+        PCB::running->setSemRetVal(0);
         riscV::w_sstatus(sstatus);
     }
     else{

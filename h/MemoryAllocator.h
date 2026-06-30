@@ -20,6 +20,7 @@ public:
     MemoryAllocator() = default;
     ~MemoryAllocator() = default;
     static void* mem_alloc(size_t size);
+    static void* mem_alloc_alajn(size_t size);
     static int mem_free(void*);
 };
 

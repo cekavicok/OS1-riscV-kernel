@@ -14,18 +14,11 @@ static const int OUTPUT_SIZE = 64;
 static const int INPUT_SIZE = 64;
 static const int MAX_DRAIN_PER_IRQ = 16;
 
-static inline size_t alajn(size_t size) {
-    size_t blocks = size/MEM_BLOCK_SIZE;
-    if (size%MEM_BLOCK_SIZE) blocks++;
-    return blocks;
-}
-
 void Kconsole::init() {
     outputBuffer = new Kbuffer(OUTPUT_SIZE);
     inputBuffer = new Kbuffer(INPUT_SIZE);
 
-    size_t blocks = alajn(DEFAULT_STACK_SIZE);
-    uint64* s = (uint64*) MemoryAllocator::mem_alloc(blocks);
+    uint64* s = (uint64*) MemoryAllocator::mem_alloc_alajn(DEFAULT_STACK_SIZE);
     PCB::createPCB(writerThreadBody, nullptr, s, true);
 }
 
