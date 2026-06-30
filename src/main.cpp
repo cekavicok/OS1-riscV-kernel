@@ -9,9 +9,6 @@
 #include "../h/semaphoreTest.h"
 //clean->qemu
 
-
-
-
 extern void userMain();
 
 void usermainWrapper(void* thr) {
@@ -19,6 +16,7 @@ void usermainWrapper(void* thr) {
     userMain();
 
 }
+static volatile uint64 idleCount = 0;
 void idleBody(void*) {
     while (true) {}
 }
@@ -39,15 +37,20 @@ int main(){
     idle = PCB::createIdle(idleBody);
     Scheduler::setIdle(idle);
 
+
+
     riscV::mask_set_sstatus(riscV::SSTATUS_SIE);
+
     thread_create(&threads[1], usermainWrapper, nullptr);
 
     while (!(threads[1]->isFinished())) {
         thread_dispatch();
     }
+
     for (auto &thread : threads) {
         delete thread;
     }
+
     riscV::shutdown();
     return 0;
 }
