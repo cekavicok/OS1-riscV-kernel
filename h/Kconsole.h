@@ -18,11 +18,12 @@ public:
 
     static void rawPutc(char c);
     static int rawGetc();
-
+    static void flush();
 private:
     static bool txReady();
     static bool rxReady();
     static void writerThreadBody(void* arg);
+    static volatile uint64 cnt;
 
 
     static Kbuffer* outputBuffer;

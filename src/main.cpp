@@ -1,22 +1,20 @@
-#include "../lib/console.h"
+
 #include "../h/riscV.h"
-#include "../h/MemoryAllocator.h"
 #include "../h/syscall_cpp.h"
 #include "../h/Kconsole.h"
 #include "../h/PCB.h"
-#include "../h/workers.h"
-#include "../h/print.h"
-#include "../h/semaphoreTest.h"
+
 //clean->qemu
 
 extern void userMain();
 
+static volatile bool flag = false;
+
 void usermainWrapper(void* thr) {
-
     userMain();
-
+    flag = true;
 }
-static volatile uint64 idleCount = 0;
+
 void idleBody(void*) {
     while (true) {}
 }
@@ -33,7 +31,7 @@ int main(){
     thread_create(&threads[0], nullptr, nullptr);
     PCB::running = threads[0];
     Kconsole::init();
-
+    //mora da stoji pre pokretanja prekida
     idle = PCB::createIdle(idleBody);
     Scheduler::setIdle(idle);
 
@@ -43,13 +41,11 @@ int main(){
 
     thread_create(&threads[1], usermainWrapper, nullptr);
 
-    while (!(threads[1]->isFinished())) {
+    while (!flag) {
         thread_dispatch();
     }
-
-    for (auto &thread : threads) {
-        delete thread;
-    }
+    Kconsole::flush();
+    riscV::mask_clear_sstatus(riscV::SSTATUS_SIE);
 
     riscV::shutdown();
     return 0;

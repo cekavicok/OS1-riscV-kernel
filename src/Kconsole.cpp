@@ -6,6 +6,7 @@
 #include "../h/KBuffer.h"
 #include "../h/PCB.h"
 #include "../h/MemoryAllocator.h"
+#include "../h/riscV.h"
 
 Kbuffer* Kconsole::outputBuffer = nullptr;
 Kbuffer* Kconsole::inputBuffer = nullptr;
@@ -13,6 +14,7 @@ Kbuffer* Kconsole::inputBuffer = nullptr;
 static const int OUTPUT_SIZE = 64;
 static const int INPUT_SIZE = 64;
 static const int MAX_DRAIN_PER_IRQ = 16;
+volatile uint64 Kconsole::cnt = 0;
 
 void Kconsole::init() {
     outputBuffer = new Kbuffer(OUTPUT_SIZE);
@@ -44,10 +46,14 @@ void Kconsole::writerThreadBody(void*) {
     while (true) {
         char c = outputBuffer->get();
         rawPutc(c);
+        riscV::mask_clear_sstatus(riscV::SSTATUS_SIE);
+        cnt = cnt - 1;
+        riscV::mask_set_sstatus(riscV::SSTATUS_SIE);
     }
 }
 
 void Kconsole::putc(char c) {
+    cnt = cnt + 1;
     outputBuffer->put(c);
 }
 char Kconsole::getc() {
@@ -61,4 +67,11 @@ void Kconsole::onRxAvailable() {
         inputBuffer->try_put((char)c);
         cnt++;
     }
+}
+
+void Kconsole::flush() {
+    while (cnt > 0) {
+        PCB::yield();
+    }
+    while (!txReady()) {}
 }

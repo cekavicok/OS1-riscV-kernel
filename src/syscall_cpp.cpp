@@ -22,9 +22,7 @@ Thread::Thread(void (*body)(void*), void* arg) : myHandle(nullptr), body(body), 
 
 Thread::Thread() : myHandle(nullptr), body(threadWrapper), arg(this) {}
 
-Thread::~Thread() {
-    delete myHandle;
-}
+Thread::~Thread() {}
 
 int Thread::start() {
     return thread_create(&myHandle, body, arg);

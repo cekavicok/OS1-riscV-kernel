@@ -5,7 +5,7 @@
 
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_c.h"
-#include "../h/print.h"
+//#include "../h/print.h"
 #include "../h/PCB.h"
 #include "../h/Kconsole.h"
 #include "../lib/console.h"
@@ -71,18 +71,18 @@ void riscV::handleTrap(uint64* frame) {
                 break;
             }
             case CODE_THREAD_CREATE: {
-                uint64* stack = (uint64*)arg1;
-                void* arg = (void*)arg2;
-                PCB::Body routine = (PCB::Body)arg3;
-                thread_t* handle = (thread_t*)arg4;
+                uint64* stack = (arg4 != 0) ? (uint64*)(arg4 - DEFAULT_STACK_SIZE) : nullptr;
+                void* arg = (void*)arg3;
+                PCB::Body routine = (PCB::Body)arg2;
+                thread_t* handle = (thread_t*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 bool privileged = (routine == nullptr);
                 *handle = PCB::createPCB(routine, arg, stack, privileged);
                 ret = *handle != nullptr ? 0 : -1;
                 break;
             }
             case CODE_THREAD_EXIT: {
-                PCB::running->setFinished(true);
-                PCB::dispatch();
+                PCB::exit();
                 break;
             }
             case CODE_THREAD_DISPATCH: {
@@ -90,38 +90,45 @@ void riscV::handleTrap(uint64* frame) {
                 break;
             }
             case CODE_SEM_OPEN: {
-                sem_t* handle = (sem_t*)arg2;
-                unsigned init = (unsigned)arg1;
+                sem_t* handle = (sem_t*)arg1;
+                unsigned init = (unsigned)arg2;
+                if (handle == nullptr) { ret = -1; break; }
                 *handle = Ksemaphore::createSemaphore(init);
                 ret = *handle != nullptr ? 0 : -1;
                 break;
             }
             case CODE_SEM_CLOSE: {
                 Ksemaphore* handle = (Ksemaphore*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 ret = handle->close();
+                delete handle;
                 break;
             }
             case CODE_SEM_WAIT: {
                 Ksemaphore* handle = (Ksemaphore*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 handle->wait(1);
                 ret = PCB::running->getSemRetVal();
                 break;
             }
             case CODE_SEM_SIGNAL: {
                 Ksemaphore* handle = (Ksemaphore*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 ret = handle->signal(1);
                 break;
             }
             case CODE_SEM_WAIT_N: {
-                uint64 n = (uint64)arg1;
-                Ksemaphore* handle = (Ksemaphore*)arg2;
+                uint64 n = arg2;
+                Ksemaphore* handle = (Ksemaphore*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 handle->wait(n);
                 ret = PCB::running->getSemRetVal();
                 break;
             }
             case CODE_SEM_SIGNAL_N: {
-                uint64 n = (uint64)arg1;
-                Ksemaphore* handle = (Ksemaphore*)arg2;
+                uint64 n = (uint64)arg2;
+                Ksemaphore* handle = (Ksemaphore*)arg1;
+                if (handle == nullptr) {ret = -1; break;}
                 ret = handle->signal(n);
                 break;
             }

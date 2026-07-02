@@ -35,11 +35,15 @@ int mem_free (void* ptr){
 
 int thread_create(thread_t* handle, void (*start_routine)(void*), void* arg) {
     void* stack = nullptr;
-    if (start_routine != nullptr) stack = mem_alloc(DEFAULT_STACK_SIZE);
-    __asm__ volatile("mv a4, %0" : : "r" (handle));
-    __asm__ volatile("mv a3, %0" : : "r" (start_routine));
-    __asm__ volatile("mv a2, %0" : : "r" (arg));
-    __asm__ volatile("mv a1, %0" : : "r" (stack));
+    if (start_routine != nullptr) {
+        stack = mem_alloc(DEFAULT_STACK_SIZE);
+        if (stack == nullptr) return -1;
+        stack = (void*)((uint8*)stack + DEFAULT_STACK_SIZE);
+    }
+    __asm__ volatile("mv a4, %0" : : "r" (stack));
+    __asm__ volatile("mv a3, %0" : : "r" (arg));
+    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
     __asm__ volatile("mv a0, %0" : : "r" (CODE_THREAD_CREATE));
     __asm__ volatile("ecall");
     int ret_handle;
@@ -61,8 +65,8 @@ void thread_dispatch() {
 }
 
 int sem_open(sem_t *handle, unsigned init) {
-    __asm__ volatile("mv a2, %0" : : "r" (handle));
-    __asm__ volatile("mv a1, %0" : : "r" (init));
+    __asm__ volatile("mv a2, %0" : : "r" (init));
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
     __asm__ volatile("mv a0, %0" : : "r" (CODE_SEM_OPEN));
     __asm__ volatile("ecall");
     int ret;
@@ -98,8 +102,8 @@ int sem_signal(sem_t id) {
 }
 
 int sem_wait_n(sem_t id, unsigned n) {
-    __asm__ volatile("mv a2, %0" : : "r" (id));
-    __asm__ volatile("mv a1, %0" : : "r" (n));
+    __asm__ volatile("mv a2, %0" : : "r" (n));
+    __asm__ volatile("mv a1, %0" : : "r" (id));
     __asm__ volatile("mv a0, %0" : : "r" (CODE_SEM_WAIT_N));
     __asm__ volatile("ecall");
     int ret;
@@ -108,8 +112,8 @@ int sem_wait_n(sem_t id, unsigned n) {
 }
 
 int sem_signal_n(sem_t id, unsigned n) {
-    __asm__ volatile("mv a2, %0" : : "r" (id));
-    __asm__ volatile("mv a1, %0" : : "r" (n));
+    __asm__ volatile("mv a2, %0" : : "r" (n));
+    __asm__ volatile("mv a1, %0" : : "r" (id));
     __asm__ volatile("mv a0, %0" : : "r" (CODE_SEM_SIGNAL_N));
     __asm__ volatile("ecall");
     int ret;

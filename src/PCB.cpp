@@ -8,11 +8,25 @@
 #include "../h/print.h"
 #include "../h/syscall_c.h"
 #include "../lib/console.h"
+#include "../h/MemoryAllocator.h"
 
-PCB* g_running_shadow = nullptr;
+List<PCB> PCB::done;
 PCB *PCB::running = nullptr;
 
 uint64 PCB::timeSliceCounter = 0;
+
+
+void* PCB::operator new(size_t n) {
+    return MemoryAllocator::mem_alloc_alajn(n);
+}
+
+void PCB::operator delete(void* p) noexcept {
+    MemoryAllocator::mem_free(p);
+}
+
+PCB::~PCB() {
+    if (stack != nullptr) MemoryAllocator::mem_free(stack);
+}
 
 PCB* PCB::createPCB(Body body, void* arg, uint64* stack, bool privileged) {
     return new PCB(body, arg, stack, privileged);
@@ -41,7 +55,26 @@ void PCB::userBodyWrapper() {
     thread_exit();
 }
 
+void PCB::exit() {
+    running->setFinished(true);
+    done.addLast(running);
+    dispatch();
+}
+
+void PCB::clean_done() {
+    unsigned long n = done.getSize();
+    for (unsigned long i = 0; i < n; i++) {
+        PCB* p = done.removeFirst();
+        if (p == running) {
+            done.addLast(p);
+            continue;
+        }
+        delete p;
+    }
+}
+
 void PCB::dispatch() {
+    clean_done();
     PCB* old = running;
     if (!old->isFinished() && !old->isBlocked() && !old->isIdle()) {
         Scheduler::put(old);

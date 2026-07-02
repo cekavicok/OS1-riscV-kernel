@@ -9,7 +9,9 @@
 
 class PCB {
 public:
-    ~PCB() { delete[] stack; }
+    void * operator new(size_t n);
+    void operator delete(void* p) noexcept;
+    ~PCB();
 
     bool isFinished() const { return finished; }
     void setFinished(bool f) { finished = f; }
@@ -32,6 +34,7 @@ public:
     static PCB* createPCB(Body body, void* arg, uint64* stack, bool privileged);
     static PCB* createIdle(Body body);
     static void yield();
+    static void exit();
 
     static PCB* running;
     static void dispatch();
@@ -76,11 +79,15 @@ private:
     uint64 sleepCounter;
     friend class riscV;
 
+
+
     static void wrapper();
     static void userBodyWrapper();
     static void contextSwitch(Context *oldContext, Context *newContext);
 
     static uint64 timeSliceCounter;
+    static List<PCB> done;
+    static void clean_done();
 
     //static uint64 constexpr STACK_SIZE = 1024;
 };

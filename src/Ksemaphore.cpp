@@ -36,8 +36,8 @@ void Ksemaphore::block(uint64 n, uint64 savedSstatus) {
     Waiter* w = new Waiter(PCB::running, n);
     blockedQueue.addLast(w);
     PCB::running->setBlocked(true);
-    riscV::w_sstatus(savedSstatus);
     PCB::dispatch();
+    riscV::w_sstatus(savedSstatus);
 }
 
 void Ksemaphore::unblock() {
