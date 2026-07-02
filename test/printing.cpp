@@ -3,6 +3,7 @@
 //
 
 #include "printing.hpp"
+
 uint64 lockPrint = 0;
 
 #define LOCK() while(copy_and_swap(lockPrint, 0, 1)) thread_dispatch()

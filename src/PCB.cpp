@@ -5,7 +5,7 @@
 #include "../h/PCB.h"
 #include "../h/riscV.h"
 #include "../h/scheduler.h"
-#include "../h/print.h"
+#include "../myTest/print.h"
 #include "../h/syscall_c.h"
 #include "../lib/console.h"
 #include "../h/MemoryAllocator.h"
