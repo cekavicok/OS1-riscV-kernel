@@ -8,7 +8,7 @@ The kernel provides preemptive time-sliced threads, semaphores, thread sleeping,
 
 ## Project Structure
 
-> The layout follows the `#include` paths used in the source (`../h/`, `../lib/`). Adjust this section if your repository names things differently.
+
 
 ```
 .
@@ -172,7 +172,7 @@ The `test/` directory contains the public tests:
 
 ## Author
 
-**Cekavi** – Computer Engineering and Informatics, School of Electrical Engineering, University of Belgrade.
+**Gordan Djordjevic** – Computer Engineering and Informatics, School of Electrical Engineering, University of Belgrade.
 
 ## License
 
